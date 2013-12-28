@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.jcr.Binary;
+import javax.jcr.Property;
 import javax.jcr.Value;
 
 import org.apache.jackrabbit.value.BinaryValue;
@@ -21,7 +22,7 @@ import org.apache.jackrabbit.value.StringValue;
 /**
  * 
  * @author Marcus Becker
- *
+ * 
  */
 
 public class Util {
@@ -122,6 +123,54 @@ public class Util {
 		} else {
 			return new StringValue(String.valueOf(value));
 		}
+	}
+
+	public static Object getConvertedValue(Field field, Property property) {
+		Object valueReturn = null;
+
+		Class<?> type = field.getType();
+
+		try {
+			if (type.equals(String.class)) {
+				valueReturn = property.getString();
+
+			} else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+				valueReturn = property.getBoolean();
+
+			} else if (type.equals(Integer.class) || type.equals(int.class)) {
+				valueReturn = (int) property.getLong();
+
+			} else if (type.equals(Long.class) || type.equals(long.class)) {
+				valueReturn = property.getLong();
+
+			} else if (type.equals(Float.class) || type.equals(float.class)) {
+				valueReturn = (float) property.getDouble();
+
+			} else if (type.equals(Double.class) || type.equals(double.class)) {
+				valueReturn = property.getDouble();
+
+			} else if (type.equals(Date.class) || type.equals(Calendar.class)) {
+				valueReturn = type.equals(Calendar.class) ? property.getDate()
+						: property.getDate().getTime();
+
+			} else if (type.equals(BigDecimal.class)) {
+				valueReturn = property.getDecimal();
+
+			} else if (type.equals(Binary.class)) {
+				valueReturn = property.getBinary();
+
+			} else if (type.equals(byte[].class)) {
+				byte[] arr = new byte[0];
+				property.getBinary().read(arr, property.getBinary().getSize());
+
+				valueReturn = arr;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return valueReturn;
 	}
 
 }

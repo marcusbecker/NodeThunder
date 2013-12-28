@@ -2,9 +2,13 @@ package br.com.mvbos.nodethunder.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
+import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -20,7 +24,7 @@ import br.com.mvbos.nodethunder.annotation.ThunderField;
 /**
  * 
  * @author Marcus Becker
- *
+ * 
  */
 
 public class NodeThunder {
@@ -158,7 +162,7 @@ public class NodeThunder {
 		T newVo = vo.newInstance();
 
 		validateClassPropertyValue(vo, node);
-		
+
 		for (Field field : vo.getDeclaredFields()) {
 
 			if (Modifier.isFinal(field.getModifiers())) {
@@ -173,11 +177,9 @@ public class NodeThunder {
 
 			boolean isPropertyName = false;
 
-			IConverter converter = null;
+			IConverter<?, ?> converter = null;
 
 			boolean isMixinType = false;
-
-			Class<? extends IConverter> iConverter = null;
 
 			String fieldName = field.getName();
 
@@ -189,12 +191,10 @@ public class NodeThunder {
 
 				isPropertyName = annotation.setPropertyName();
 
-				iConverter = annotation.converter();
-
 				isMixinType = annotation.setMixinType();
 
-				if (!iConverter.isInterface()) {
-					converter = iConverter.newInstance();
+				if (annotation.converter() != BlankConvert.class) {
+					converter = annotation.converter().newInstance();
 				}
 
 				// Verify if use the name of Field or Annotation to value
@@ -241,12 +241,22 @@ public class NodeThunder {
 					}
 
 				} else if (isSimpleField(field) && node.hasProperty(fieldName)) {
-					String nodeValue = node.getProperty(fieldName).getString();
 
-					field.set(newVo, getConvertedValue(field, nodeValue));
+					if (useGenericType) {
+						String nodeValue = node.getProperty(fieldName)
+								.getString();
 
-					if (empty(nodeValue)) {
-						continue;
+						if (empty(nodeValue)) {
+							continue;
+						}
+
+						field.set(newVo, getConvertedValue(field, nodeValue));
+
+					} else {
+						Object nodeValue = Util.getConvertedValue(field,
+								node.getProperty(fieldName));
+						
+						field.set(newVo, nodeValue);
 					}
 
 				} else if ((!lazy || buildConfig.haveIncludeField(fieldName))
@@ -489,7 +499,9 @@ public class NodeThunder {
 				|| type.equals(int.class) || type.equals(Long.class)
 				|| type.equals(long.class) || type.equals(Float.class)
 				|| type.equals(float.class) || type.equals(Double.class)
-				|| type.equals(double.class)) {
+				|| type.equals(double.class) || type.equals(Date.class)
+				|| type.equals(Calendar.class) || type.equals(BigDecimal.class)
+				|| type.equals(Binary.class) || type.equals(byte[].class)) {
 
 			return true;
 
@@ -497,7 +509,7 @@ public class NodeThunder {
 
 		return false;
 	}
-
+	
 	public static Object getConvertedValue(Field field, String value) {
 		Object valueReturn = value;
 
@@ -552,14 +564,12 @@ public class NodeThunder {
 
 			boolean isPropertyName = false;
 
-			IConverter converter = null;
-
-			Class<? extends IConverter> iConverter = null;
+			IConverter<?, ?> converter = null;
 
 			String key = field.getName();
 
 			Object value = null;
-			
+
 			Class<?> type = field.getType();
 
 			String childPath = "";
@@ -580,10 +590,8 @@ public class NodeThunder {
 
 				childPath = annotation.childPath();
 
-				iConverter = annotation.converter();
-
-				if (!iConverter.isInterface()) {
-					converter = iConverter.newInstance();
+				if (annotation.converter() != BlankConvert.class) {
+					converter = annotation.converter().newInstance();
 				}
 
 				// Verify if use the name of Field or Annotation to value key;
@@ -601,9 +609,10 @@ public class NodeThunder {
 			} else if (converter != null) {
 				Object objReturn = converter.toNode(field.get(vo));
 
-				type = objReturn.getClass();
-				
-				value = objReturn;
+				if (objReturn != null) {
+					type = objReturn.getClass();
+					value = objReturn;
+				}
 
 			} else if (cascade && field.getType().equals(List.class)) {
 
@@ -647,7 +656,7 @@ public class NodeThunder {
 			}
 
 			if (notEmpty(key) && value != null) {
-				if(useGenericType)
+				if (useGenericType)
 					node.setProperty(key, String.valueOf(value));
 				else
 					node.setProperty(key, Util.getConvertedValue(type, value));

@@ -2,6 +2,7 @@ package br.com.mvbos.test.vo;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.List;
 
 import br.com.mvbos.nodethunder.annotation.ThunderEntity;
 import br.com.mvbos.nodethunder.annotation.ThunderField;
@@ -9,7 +10,7 @@ import br.com.mvbos.nodethunder.annotation.ThunderField;
 /**
  * 
  * @author Marcus Becker
- *
+ * 
  */
 
 @ThunderEntity(propertyName = "id")
@@ -27,6 +28,9 @@ public class Client {
 	private Calendar lastCheck;
 	@ThunderField
 	private Boolean reciveNews;
+
+	@ThunderField(converter = PhonesConverter.class)
+	private List<String> phones;
 
 	public Client() {
 		super();
@@ -91,11 +95,20 @@ public class Client {
 		this.reciveNews = reciveNews;
 	}
 
+	public List<String> getPhones() {
+		return phones;
+	}
+
+	public void setPhones(List<String> phones) {
+		this.phones = phones;
+	}
+
 	@Override
 	public String toString() {
 		return "Client [id=" + id + ", name=" + name + ", salary=" + salary
-				+ ", acountBalance=" + acountBalance + ", lastCheck=" + lastCheck
-				+ ", reciveNews=" + reciveNews + "]";
+				+ ", acountBalance=" + acountBalance + ", lastCheck="
+				+ lastCheck.getTimeInMillis() + ", reciveNews=" + reciveNews + ", phones="
+				+ phones + "]";
 	}
 
 	@Override

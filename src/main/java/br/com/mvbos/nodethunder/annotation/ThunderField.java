@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import br.com.mvbos.nodethunder.core.BlankConvert;
 import br.com.mvbos.nodethunder.core.IConverter;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
@@ -68,6 +69,6 @@ public @interface ThunderField {
 	 * ).
 	 * 
 	 */
-	Class<? extends IConverter> converter() default IConverter.class;
+	Class<? extends IConverter<?,?>> converter() default BlankConvert.class;
 
 }
