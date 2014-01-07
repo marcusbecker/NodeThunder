@@ -3,8 +3,11 @@ NodeThunder
 
 Easy way to use a node JCR as Java Object.
 
+To learn:
+See wiki.
+
 To view source:
 Import the project as Maven project.
 
 To use:
-Just copy the jar file from dist.
+Just copy the jar file from dist folder.
