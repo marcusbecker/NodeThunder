@@ -258,7 +258,15 @@ public class NodeThunder {
 						
 						field.set(newVo, nodeValue);
 					}
+					
+				} else if (isArrayField(field) && node.hasProperty(fieldName)) {
 
+					if (!useGenericType) {
+						Object nodeValue = Util.getConvertedArrayValue(field, node.getProperty(fieldName));
+
+						field.set(newVo, nodeValue);
+					}
+					
 				} else if ((!lazy || buildConfig.haveIncludeField(fieldName))
 						&& isListField(field)) {
 
@@ -509,6 +517,26 @@ public class NodeThunder {
 
 		return false;
 	}
+
+	public static boolean isArrayField(Field field) {
+		
+		Class<?> type = field.getType();
+		
+		if (type.equals(String[].class) || type.equals(Boolean[].class)
+				|| type.equals(boolean[].class) || type.equals(Integer[].class)
+				|| type.equals(int[].class) || type.equals(Long[].class)
+				|| type.equals(long[].class) || type.equals(Float[].class)
+				|| type.equals(float[].class) || type.equals(Double[].class)
+				|| type.equals(double[].class) || type.equals(Date[].class)
+				|| type.equals(Calendar[].class) || type.equals(BigDecimal[].class)
+				|| type.equals(Binary[].class) || type.equals(byte[].class)) {
+			
+			return true;
+			
+		}
+		
+		return false;
+	}
 	
 	public static Object getConvertedValue(Field field, String value) {
 		Object valueReturn = value;
@@ -535,6 +563,7 @@ public class NodeThunder {
 
 		return valueReturn;
 	}
+	
 
 	private void createNode(Object vo, Node node) throws Exception {
 
@@ -656,10 +685,20 @@ public class NodeThunder {
 			}
 
 			if (notEmpty(key) && value != null) {
-				if (useGenericType)
+				if (useGenericType) {
 					node.setProperty(key, String.valueOf(value));
-				else
+
+				} else if (converter == null && isSimpleField(field) || isArrayField(field)) {
+					if (isSimpleField(field)) {
+						node.setProperty(key, Util.getConvertedValue(type, value));
+
+					} else if (isArrayField(field)) {
+						node.setProperty(key, Util.getConvertedArrayValue(type, (Object[]) value));
+					}
+
+				} else {
 					node.setProperty(key, Util.getConvertedValue(type, value));
+				}
 
 			} else if (subscribe) {
 				node.setProperty(key, "");

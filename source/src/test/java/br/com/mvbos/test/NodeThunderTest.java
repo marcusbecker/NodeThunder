@@ -40,7 +40,7 @@ public class NodeThunderTest {
 		List<String> fakePhones = Arrays.asList(new String[] { "55-11-123-321",
 				"55-11-456-654", "55-11-789-987" });
 
-		clientVO = new Client(1L, "Aaa", 2900.00, new BigDecimal(170000.20),
+		clientVO = new Client(1L, "Aa«„o", 2900.00, new BigDecimal(170000.20),
 				Calendar.getInstance(), Boolean.FALSE);
 
 		clientVO.setPhones(fakePhones);
