@@ -1,0 +1,4 @@
+Documentar iconvert
+Obter Values
+Verificar sysouts
+Ampliar teste integrado
