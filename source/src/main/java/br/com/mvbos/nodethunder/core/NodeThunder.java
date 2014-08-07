@@ -265,7 +265,6 @@ public class NodeThunder {
 
 					if (!useGenericType) {
 						Object nodeValue = Util.getConvertedArrayValue(field, node.getProperty(fieldName));
-
 						field.set(newVo, nodeValue);
 					}
 					
