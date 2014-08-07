@@ -30,6 +30,8 @@ import br.com.mvbos.nodethunder.annotation.ThunderField;
 public class NodeThunder {
 
 	private static final String JCR_SQL2 = Query.JCR_SQL2;
+	
+	private static final String CHILD_PATH_SLASH = "/";
 
 	private static final String BT_NODE_TYPE = NodeThunder.class
 			.getSimpleName() + "Type";
@@ -310,7 +312,8 @@ public class NodeThunder {
 
 							lstReturn.add(objReturn);
 							
-						} else if (listType.isAnnotationPresent(ThunderEntity.class)) {
+						//} else if (listType.isAnnotationPresent(ThunderEntity.class)) {
+						} else if (CHILD_PATH_SLASH.equals(childPath)) {
 							//TODO teste
 							if (lstReturn == null) {
 								lstReturn = new ArrayList<Object>(10);
@@ -664,7 +667,7 @@ public class NodeThunder {
 
 					Node childNode = node;
 
-					if (notEmpty(childPath)) {
+					if (notEmpty(childPath) && !childPath.equals(CHILD_PATH_SLASH)) {
 						if (node.hasNode(childPath)) {
 							childNode = node.getNode(childPath);
 						} else {
