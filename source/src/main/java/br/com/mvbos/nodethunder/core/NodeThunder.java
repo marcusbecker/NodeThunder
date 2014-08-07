@@ -192,6 +192,8 @@ public class NodeThunder {
 				isPropertyName = annotation.setPropertyName();
 
 				isMixinType = annotation.setMixinType();
+				
+				childPath = annotation.childPath();
 
 				if (annotation.converter() != BlankConvert.class) {
 					converter = annotation.converter().newInstance();
@@ -281,7 +283,7 @@ public class NodeThunder {
 					while (subIt.hasNext()) {
 						Node subNode = subIt.nextNode();
 
-						if (field.getName().equals(subNode.getName())) {
+						if (field.getName().equals(subNode.getName()) || field.getName().equals(childPath) ) {
 
 							NodeIterator internal = subNode.getNodes();
 
@@ -301,6 +303,16 @@ public class NodeThunder {
 								|| (autoSetCustomProperty && filterByClassType(
 										subNode, listType) == NodeTypeValidation.INVALID)) {
 
+							if (lstReturn == null) {
+								lstReturn = new ArrayList<Object>(10);
+							}
+
+							Object objReturn = popule(subNode, listType);
+
+							lstReturn.add(objReturn);
+							
+						} else if (listType.isAnnotationPresent(ThunderEntity.class)) {
+							//TODO teste
 							if (lstReturn == null) {
 								lstReturn = new ArrayList<Object>(10);
 							}
