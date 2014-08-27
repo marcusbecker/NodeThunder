@@ -27,307 +27,426 @@ import org.apache.jackrabbit.value.StringValue;
 
 public class Util {
 
-	public static Class<?> getGenericListType(Field field) {
-		Type genericType = field.getGenericType();
+    public static Class<?> getGenericListType(Field field) {
+	Type genericType = field.getGenericType();
 
-		if (genericType instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType) genericType;
+	if (genericType instanceof ParameterizedType) {
+	    ParameterizedType parameterizedType = (ParameterizedType) genericType;
 
-			return (Class<?>) parameterizedType.getActualTypeArguments()[0];
-		}
-
-		return null;
+	    return (Class<?>) parameterizedType.getActualTypeArguments()[0];
 	}
 
-	public static Object getIntOrLong(String value, Field field) {
-		Class<?> type = field.getType();
+	return null;
+    }
 
-		if (value == null || value.isEmpty() || value.equals("null")) {
-			return null;
-		}
+    public static Object getIntOrLong(String value, Field field) {
+	Class<?> type = field.getType();
 
-		try {
-			if (type.equals(Integer.class) || type.equals(int.class)) {
-				return Integer.valueOf(value);
-			} else {
-				return Long.valueOf(value);
-			}
-
-		} catch (NumberFormatException n) {
-			Exception e = new Exception("Error to converter " + field.getName()
-					+ " for type " + type + " with value " + value, n);
-			e.printStackTrace();
-		}
-
-		return null;
+	if (value == null || value.isEmpty() || value.equals("null")) {
+	    return null;
 	}
 
-	public static Object getFloatOrDouble(String value, Field field) {
-		Class<?> type = field.getType();
+	try {
+	    if (type.equals(Integer.class) || type.equals(int.class)) {
+		return Integer.valueOf(value);
+	    } else {
+		return Long.valueOf(value);
+	    }
 
-		if (value == null || value.isEmpty() || value.equals("null")) {
-			return null;
-		}
-
-		try {
-			if (type.equals(Float.class) || type.equals(float.class)) {
-				return Float.valueOf(value);
-			} else {
-				return Double.valueOf(value);
-			}
-
-		} catch (NumberFormatException n) {
-			Exception e = new Exception("Erro to converter " + field.getName()
-					+ " para tipo " + type + " com valor " + value, n);
-			e.printStackTrace();
-		}
-
-		return null;
+	} catch (NumberFormatException n) {
+	    Exception e = new Exception("Error to converter " + field.getName() + " for type " + type + " with value " + value, n);
+	    e.printStackTrace();
 	}
 
-	public static Value getConvertedValue(Class<?> type, Object value) {
-		if (type == int.class || type == Integer.class || type == long.class
-				|| type == Long.class) {
+	return null;
+    }
 
-			return new LongValue(Long.parseLong(String.valueOf(value)));
+    public static Object getFloatOrDouble(String value, Field field) {
+	Class<?> type = field.getType();
 
-		} else if (type == float.class || type == Float.class
-				|| type == double.class || type == Double.class) {
+	if (value == null || value.isEmpty() || value.equals("null")) {
+	    return null;
+	}
 
-			return new DoubleValue(Double.parseDouble(String.valueOf(value)));
+	try {
+	    if (type.equals(Float.class) || type.equals(float.class)) {
+		return Float.valueOf(value);
+	    } else {
+		return Double.valueOf(value);
+	    }
 
-		} else if (type == boolean.class || type == Boolean.class) {
-			return new BooleanValue((Boolean) value);
+	} catch (NumberFormatException n) {
+	    Exception e = new Exception("Erro to converter " + field.getName() + " para tipo " + type + " com valor " + value, n);
+	    e.printStackTrace();
+	}
 
-		} else if (type == Date.class || type == Calendar.class) {
-			Calendar c = null;
-			if (type == Date.class) {
-				c = Calendar.getInstance();
-				c.setTime((Date) value);
+	return null;
+    }
 
-			} else {
-				c = (Calendar) value;
-			}
+    public static Value getConvertedValue(Class<?> type, Object value) {
+	if (type == int.class || type == Integer.class || type == long.class || type == Long.class) {
 
-			return new DateValue(c);
+	    return new LongValue(Long.parseLong(String.valueOf(value)));
 
-		} else if (type == BigDecimal.class) {
-			return new DecimalValue((BigDecimal) value);
+	} else if (type == float.class || type == Float.class || type == double.class || type == Double.class) {
 
-		} else if (type == Binary.class) {
-			return new BinaryValue((Binary) value);
+	    return new DoubleValue(Double.parseDouble(String.valueOf(value)));
 
-		} else if (type == byte[].class) {
-			return new BinaryValue((byte[]) value);
+	} else if (type == boolean.class || type == Boolean.class) {
+	    return new BooleanValue((Boolean) value);
+
+	} else if (type == Date.class || type == Calendar.class) {
+	    Calendar c = null;
+	    if (type == Date.class) {
+		c = Calendar.getInstance();
+		c.setTime((Date) value);
+
+	    } else {
+		c = (Calendar) value;
+	    }
+
+	    return new DateValue(c);
+
+	} else if (type == BigDecimal.class) {
+	    return new DecimalValue((BigDecimal) value);
+
+	} else if (type == Binary.class) {
+	    return new BinaryValue((Binary) value);
+
+	} else if (type == byte[].class) {
+	    return new BinaryValue((byte[]) value);
+
+	} else {
+	    return new StringValue(String.valueOf(value));
+	}
+    }
+
+    public static Value[] getConvertedArrayValue(Class<?> type, Object obj) {
+	Object[] value = parsePrimitiveArrayToObjectArray(obj);
+	Value[] arr = new Value[value.length];
+
+	int i = 0;
+	if (type == String[].class) {
+	    for (Object o : value) {
+		arr[i++] = new StringValue(String.valueOf(o));
+	    }
+
+	} else if (type == int[].class || type == Integer[].class || type == long[].class || type == Long[].class) {
+
+	    for (Object o : value) {
+		arr[i++] = new LongValue(Long.parseLong(String.valueOf(o)));
+	    }
+
+	} else if (type == float[].class || type == Float[].class || type == double[].class || type == Double[].class) {
+
+	    for (Object o : value) {
+		arr[i++] = new DoubleValue(Double.parseDouble(String.valueOf(o)));
+	    }
+
+	} else if (type == boolean[].class || type == Boolean[].class) {
+	    for (Object o : value) {
+		arr[i++] = new BooleanValue((Boolean) o);
+	    }
+
+	} else if (type == Date[].class || type == Calendar[].class) {
+	    for (Object o : value) {
+
+		Calendar c = null;
+		if (type == Date[].class) {
+		    c = Calendar.getInstance();
+		    c.setTime((Date) o);
 
 		} else {
-			return new StringValue(String.valueOf(value));
+		    c = (Calendar) o;
 		}
+
+		arr[i++] = new DateValue(c);
+	    }
+
+	} else if (type == BigDecimal[].class) {
+	    for (Object o : value) {
+		arr[i++] = new DecimalValue((BigDecimal) o);
+	    }
+
+	} else if (type == Binary[].class) {
+	    for (Object o : value) {
+		arr[i++] = new BinaryValue((Binary) o);
+	    }
+
+	    // TODO test
+	    /*
+	     * } else if (type == byte[].class) { return new
+	     * BinaryValue((byte[]) value);
+	     */
+
 	}
 
-	public static Value[] getConvertedArrayValue(Class<?> type, Object[] value) {
-		Value[] arr = new Value[value.length];
-		
-		int i = 0;
-		if (type == String[].class) {
-			for (Object o : value) {
-				arr[i++] = new StringValue(String.valueOf(o));
-			}			
-			
-		}else if (type == int[].class || type == Integer[].class || type == long[].class
-				|| type == Long[].class) {
-			
-			for (Object o : value) {
-				arr[i++] = new LongValue(Long.parseLong(String.valueOf(o)));
-			}
+	return arr;
+    }
 
-		} else if (type == float[].class || type == Float[].class
-				|| type == double[].class || type == Double[].class) {
+    public static Object getConvertedValue(Field field, Property property) {
+	Object valueReturn = null;
 
-			for (Object o : value) {
-				arr[i++] = new DoubleValue(Double.parseDouble(String.valueOf(o)));
-			}	
+	Class<?> type = field.getType();
 
-		} else if (type == boolean[].class || type == Boolean[].class) {
-			for (Object o : value) {
-				arr[i++] = new BooleanValue((Boolean) o);
-			}				
+	try {
+	    if (type.equals(String.class)) {
+		valueReturn = property.getString();
 
-		} else if (type == Date[].class || type == Calendar[].class) {
-			for (Object o : value) {
-							
-				Calendar c = null;
-				if (type == Date[].class) {
-					c = Calendar.getInstance();
-					c.setTime((Date) o);
-	
-				} else {
-					c = (Calendar) o;
-				}
-				
-				arr[i++] = new DateValue(c);
-			}
+	    } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+		valueReturn = property.getBoolean();
 
-		} else if (type == BigDecimal[].class) {
-			for (Object o : value) {
-				arr[i++] = new DecimalValue((BigDecimal) o);
-			}				
+	    } else if (type.equals(Integer.class) || type.equals(int.class)) {
+		valueReturn = (int) property.getLong();
 
-		} else if (type == Binary[].class) {
-			for (Object o : value) {
-				arr[i++] = new BinaryValue((Binary) o);
-			}			
+	    } else if (type.equals(Long.class) || type.equals(long.class)) {
+		valueReturn = property.getLong();
 
-		//TODO test
-		/*} else if (type == byte[].class) {
-			return new BinaryValue((byte[]) value);*/
+	    } else if (type.equals(Float.class) || type.equals(float.class)) {
+		valueReturn = (float) property.getDouble();
 
-		}
-		
-		return arr;
+	    } else if (type.equals(Double.class) || type.equals(double.class)) {
+		valueReturn = property.getDouble();
+
+	    } else if (type.equals(Date.class) || type.equals(Calendar.class)) {
+		valueReturn = type.equals(Calendar.class) ? property.getDate() : property.getDate().getTime();
+
+	    } else if (type.equals(BigDecimal.class)) {
+		valueReturn = property.getDecimal();
+
+	    } else if (type.equals(Binary.class)) {
+		valueReturn = property.getBinary();
+
+	    } else if (type.equals(byte[].class)) {
+		byte[] arr = new byte[0];
+		property.getBinary().read(arr, property.getBinary().getSize());
+
+		valueReturn = arr;
+	    }
+
+	} catch (Exception e) {
+	    e.printStackTrace();
 	}
-	
-	public static Object getConvertedValue(Field field, Property property) {
-		Object valueReturn = null;
 
-		Class<?> type = field.getType();
+	return valueReturn;
+    }
 
-		try {
-			if (type.equals(String.class)) {
-				valueReturn = property.getString();
+    public static Object getConvertedArrayValue(Field field, Property property) {
+	Object[] valueReturn = null;
+	Object primitiveReturn = null;
 
-			} else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-				valueReturn = property.getBoolean();
+	Class<?> type = field.getType();
 
-			} else if (type.equals(Integer.class) || type.equals(int.class)) {
-				valueReturn = (int) property.getLong();
+	try {
 
-			} else if (type.equals(Long.class) || type.equals(long.class)) {
-				valueReturn = property.getLong();
+	    Value[] values = property.getValues();
 
-			} else if (type.equals(Float.class) || type.equals(float.class)) {
-				valueReturn = (float) property.getDouble();
-
-			} else if (type.equals(Double.class) || type.equals(double.class)) {
-				valueReturn = property.getDouble();
-
-			} else if (type.equals(Date.class) || type.equals(Calendar.class)) {
-				valueReturn = type.equals(Calendar.class) ? property.getDate()
-						: property.getDate().getTime();
-
-			} else if (type.equals(BigDecimal.class)) {
-				valueReturn = property.getDecimal();
-
-			} else if (type.equals(Binary.class)) {
-				valueReturn = property.getBinary();
-
-			} else if (type.equals(byte[].class)) {
-				byte[] arr = new byte[0];
-				property.getBinary().read(arr, property.getBinary().getSize());
-
-				valueReturn = arr;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+	    if (values.length == 0) {
 		return valueReturn;
-	}
-	
-	public static Object getConvertedArrayValue(Field field, Property property) {
-		Object[] valueReturn = null;
-		
-		Class<?> type = field.getType();
-		
-		try {
-			
-			Value[] values = property.getValues();
-			
-			if (values.length == 0) {
-				return valueReturn;
-			}
-			 
-			int i = 0;
-			
-			if (type.equals(String[].class)) {
-				valueReturn = new String[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = v.getString();
-				}					
-				
-				
-			} else if (type.equals(Boolean[].class) || type.equals(boolean[].class)) {
-				valueReturn = new Boolean[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = v.getBoolean();
-				}					
-				
-			} else if (type.equals(Integer[].class) || type.equals(int[].class)) {
-				valueReturn = new Integer[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = (int) v.getLong();
-				}				
-				
-			} else if (type.equals(Long[].class) || type.equals(long[].class)) {
-				valueReturn = new Long[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = v.getLong();
-				}				
-				
-			} else if (type.equals(Float[].class) || type.equals(float[].class)) {
-				valueReturn = new Float[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = (float) v.getDouble();
-				}				
-				
-			} else if (type.equals(Double[].class) || type.equals(double[].class)) {
-				valueReturn = new Double[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = v.getDouble();
-				}				
-				
-			} else if (type.equals(Date[].class) || type.equals(Calendar[].class)) {
-				valueReturn = type.equals(Calendar[].class) ? new Calendar[values.length]
-						: new Date[values.length];
-			
-				for (Value v : values) {
-					valueReturn[i++] = type.equals(Calendar[].class) ? v.getDate() : v.getDate().getTime();
-				}				
-				
-			} else if (type.equals(BigDecimal[].class)) {
-				valueReturn = new BigDecimal[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = v.getDecimal();
-				}				
-				
-			} else if (type.equals(Binary[].class)) {
-				valueReturn = new Binary[values.length];
-				
-				for (Value v : values) {
-					valueReturn[i++] = v.getBinary();
-				}				
-				
-			} //TODO execute tests
-			/*else if (type.equals(byte[].class)) {
-				byte[] arr = new byte[0];
-				property.getBinary().read(arr, property.getBinary().getSize());
-				
-				valueReturn = arr;
-			}*/
-			
-		} catch (Exception e) {
-			e.printStackTrace();
+	    }
+
+	    int i = 0;
+
+	    if (type.equals(String[].class)) {
+		valueReturn = new String[values.length];
+
+		for (Value v : values) {
+		    valueReturn[i++] = v.getString();
 		}
-		
-		return valueReturn;
+
+	    } else if (type.equals(Boolean[].class) || type.equals(boolean[].class)) {
+		if (type.equals(boolean[].class)) {
+		    boolean[] arr = new boolean[values.length];
+		    for (Value v : values) {
+			arr[i++] = v.getBoolean();
+		    }
+
+		    primitiveReturn = arr;
+
+		} else {
+		    valueReturn = new Boolean[values.length];
+
+		    for (Value v : values) {
+			valueReturn[i++] = v.getBoolean();
+		    }
+		}
+
+	    } else if (type.equals(Integer[].class) || type.equals(int[].class)) {
+		if (type.equals(int[].class)) {
+		    int[] arr = new int[values.length];
+		    for (Value v : values) {
+			arr[i++] = (int) v.getLong();
+		    }
+
+		    primitiveReturn = arr;
+
+		} else {
+		    valueReturn = new Integer[values.length];
+
+		    for (Value v : values) {
+			valueReturn[i++] = (int) v.getLong();
+		    }
+		}
+
+	    } else if (type.equals(Long[].class) || type.equals(long[].class)) {
+		if (type.equals(long[].class)) {
+		    long[] arr = new long[values.length];
+		    for (Value v : values) {
+			arr[i++] = v.getLong();
+		    }
+
+		    primitiveReturn = arr;
+
+		} else {
+		    valueReturn = new Long[values.length];
+
+		    for (Value v : values) {
+			valueReturn[i++] = v.getLong();
+		    }
+		}
+
+	    } else if (type.equals(Float[].class) || type.equals(float[].class)) {
+		if (type.equals(float[].class)) {
+		    float[] arr = new float[values.length];
+		    for (Value v : values) {
+			arr[i++] = (float) v.getDouble();
+		    }
+
+		    primitiveReturn = arr;
+
+		} else {
+		    valueReturn = new Float[values.length];
+
+		    for (Value v : values) {
+			valueReturn[i++] = (float) v.getDouble();
+		    }
+		}
+
+	    } else if (type.equals(Double[].class) || type.equals(double[].class)) {
+		if (type.equals(double[].class)) {
+		    double[] arr = new double[values.length];
+		    for (Value v : values) {
+			arr[i++] = v.getDouble();
+		    }
+
+		    primitiveReturn = arr;
+
+		} else {
+		    valueReturn = new Double[values.length];
+
+		    for (Value v : values) {
+			valueReturn[i++] = v.getDouble();
+		    }
+		}
+
+	    } else if (type.equals(Date[].class) || type.equals(Calendar[].class)) {
+		valueReturn = type.equals(Calendar[].class) ? new Calendar[values.length] : new Date[values.length];
+
+		for (Value v : values) {
+		    valueReturn[i++] = type.equals(Calendar[].class) ? v.getDate() : v.getDate().getTime();
+		}
+
+	    } else if (type.equals(BigDecimal[].class)) {
+		valueReturn = new BigDecimal[values.length];
+
+		for (Value v : values) {
+		    valueReturn[i++] = v.getDecimal();
+		}
+
+	    } else if (type.equals(Binary[].class)) {
+		valueReturn = new Binary[values.length];
+
+		for (Value v : values) {
+		    valueReturn[i++] = v.getBinary();
+		}
+
+	    } // TODO execute tests
+	    /*
+	     * else if (type.equals(byte[].class)) { byte[] arr = new byte[0];
+	     * property.getBinary().read(arr, property.getBinary().getSize());
+	     * 
+	     * valueReturn = arr; }
+	     */
+
+	} catch (Exception e) {
+	    e.printStackTrace();
 	}
+
+	return valueReturn == null ? primitiveReturn : valueReturn;
+    }
+
+    public static Object[] parsePrimitiveArrayToObjectArray(Object value) {
+	Object[] o = null;
+
+	if (value instanceof short[]) {
+	    short[] arr = (short[]) value;
+	    o = new Short[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Short.valueOf(arr[i]);
+	    }
+
+	} else if (value instanceof char[]) {
+	    char[] arr = (char[]) value;
+	    o = new Character[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Integer.valueOf(arr[i]);
+	    }
+
+	} else if (value instanceof int[]) {
+	    int[] arr = (int[]) value;
+	    o = new Integer[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Integer.valueOf(arr[i]);
+	    }
+
+	} else if (value instanceof boolean[]) {
+	    boolean[] arr = (boolean[]) value;
+	    o = new Boolean[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Boolean.valueOf(arr[i]);
+	    }
+
+	} else if (value instanceof long[]) {
+	    long[] arr = (long[]) value;
+	    o = new Long[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Long.valueOf(arr[i]);
+	    }
+
+	} else if (value instanceof float[]) {
+	    float[] arr = (float[]) value;
+	    o = new Float[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Float.valueOf(arr[i]);
+	    }
+
+	} else if (value instanceof double[]) {
+	    double[] arr = (double[]) value;
+	    o = new Double[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Double.valueOf(arr[i]);
+	    }
+
+	} else if (value instanceof byte[]) {
+	    byte[] arr = (byte[]) value;
+	    o = new Byte[arr.length];
+
+	    for (int i = 0; i < arr.length; i++) {
+		o[i] = Byte.valueOf(arr[i]);
+	    }
+
+	} else {
+	    o = (Object[]) value;
+	}
+
+	return o;
+    }
 
 }

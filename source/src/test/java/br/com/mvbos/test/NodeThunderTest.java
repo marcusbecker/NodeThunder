@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import br.com.mvbos.nodethunder.core.NodeThunder;
+import br.com.mvbos.test.vo.Car;
 import br.com.mvbos.test.vo.Client;
 
 /**
@@ -27,90 +28,112 @@ import br.com.mvbos.test.vo.Client;
 
 public class NodeThunderTest {
 
-	private Repository repository = null;
-	private Session session;
-	private Node root;
-	private Client clientVO;
+    private Repository repository = null;
+    private Session session;
+    private Node root;
+    private Client clientVO;
 
-	@Before
-	public void before() throws Exception {
-		session = getSession();
-		root = session.getNode("/content");
+    @Before
+    public void before() throws Exception {
+	session = getSession();
+	root = session.getNode("/content");
 
-		List<String> fakePhones = Arrays.asList(new String[] { "55-11-123-321",
-				"55-11-456-654", "55-11-789-987" });
+	List<String> fakePhones = Arrays.asList(new String[] { "55-11-123-321", "55-11-456-654", "55-11-789-987" });
 
-		clientVO = new Client(1L, "Aa«„o", 2900.00, new BigDecimal(170000.20),
-				Calendar.getInstance(), Boolean.FALSE);
+	clientVO = new Client(1L, "Aa«„o", 2900.00, new BigDecimal(170000.20), Calendar.getInstance(), Boolean.FALSE);
 
-		clientVO.setPhones(fakePhones);
+	clientVO.setPhones(fakePhones);
 
-		if (root.hasNode("nodethunder")) {
-			root = root.getNode("nodethunder");
-		} else {
-			root = root.addNode("nodethunder");
-		}
-
-		if (root.hasNode("1")) {
-			root.getNode("1").remove();
-			session.save();
-		}
-
+	if (root.hasNode("nodethunder")) {
+	    root = root.getNode("nodethunder");
+	} else {
+	    root = root.addNode("nodethunder");
 	}
 
-	@After
-	public void after() {
-		session.logout();
+	if (root.hasNode("1")) {
+	    root.getNode("1").remove();
+	    session.save();
 	}
 
-	@Test
-	public void save() throws Exception {
+    }
 
-		NodeThunder nt = NodeThunder.create(session, root);
+    @After
+    public void after() {
+	session.logout();
+    }
 
-		nt.save(clientVO);
+    @Test
+    public void save() throws Exception {
 
-		Assert.assertTrue(root.hasNode("1"));
+	NodeThunder nt = NodeThunder.create(session, root);
 
+	nt.save(clientVO);
+
+	Assert.assertTrue(root.hasNode("1"));
+
+    }
+
+    @Test
+    public void load() throws Exception {
+
+	NodeThunder nt = NodeThunder.create(session, root);
+
+	nt.save(clientVO);
+
+	Client clt = nt.popule(root.getNode("1"), Client.class);
+
+	System.out.println(clientVO);
+	System.out.println(clt);
+
+	Assert.assertTrue(clt.getId().equals(clientVO.getId()) && clt.getName().equals(clientVO.getName())
+		&& clt.getSalary().equals(clientVO.getSalary()) && clt.getAcountBalance().equals(clientVO.getAcountBalance())
+		&& clt.getLastCheck().getTimeInMillis() == clientVO.getLastCheck().getTimeInMillis()
+		&& clt.getReciveNews().equals(clientVO.getReciveNews()) && clt.getPhones().equals(clientVO.getPhones()));
+
+    }
+
+    @Test
+    public void arrays() throws Exception {
+	String name = "Fusca";
+	String[] models = { "A", "B", "C" };
+	int[] doors = { 3, 4 };
+	BigDecimal[] prices = { new BigDecimal(1900.00), new BigDecimal(1950.00) };
+	double[] offers = { 0.5, 0.2 };
+	long[] ids = { 1L, 2L };
+	Calendar[] years = { Calendar.getInstance(), Calendar.getInstance() };
+	boolean[] optionals = { true, false, true, false };
+
+	Car car = new Car(name, models, doors, prices, offers, ids, years, optionals);
+
+	NodeThunder nt = NodeThunder.create(session, root);
+
+	if (root.hasNode(name)) {
+	    root.getNode(name).remove();
 	}
 
-	@Test
-	public void load() throws Exception {
+	nt.save(car);
 
-		NodeThunder nt = NodeThunder.create(session, root);
+	Car loadCar = nt.popule(root.getNode(name), Car.class);
 
-		nt.save(clientVO);
+	System.out.println(car);
+	System.out.println(loadCar);
 
-		Client clt = nt.popule(root.getNode("1"), Client.class);
+	Assert.assertTrue(car.equals(loadCar));
+    }
 
-		System.out.println(clientVO);
-		System.out.println(clt);
-		
-		Assert.assertTrue(clt.getId().equals(clientVO.getId())
-				&& clt.getName().equals(clientVO.getName())
-				&& clt.getSalary().equals(clientVO.getSalary())
-				&& clt.getAcountBalance().equals(clientVO.getAcountBalance())
-				&& clt.getLastCheck().getTimeInMillis() == clientVO.getLastCheck().getTimeInMillis()
-				&& clt.getReciveNews().equals(clientVO.getReciveNews())
-				&& clt.getPhones().equals(clientVO.getPhones()));
+    public Session getSession() {
+	try {
 
+	    repository = JcrUtils.getRepository("http://localhost:4502/crx/server");
+
+	    Session s = repository.login(new SimpleCredentials("admin", "admin".toCharArray()));
+
+	    return s;
+
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    throw new RuntimeException(e);
 	}
-
-	public Session getSession() {
-		try {
-
-			repository = JcrUtils
-					.getRepository("http://localhost:4502/crx/server");
-
-			Session s = repository.login(new SimpleCredentials("admin", "admin"
-					.toCharArray()));
-
-			return s;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-	}
+    }
 
 }

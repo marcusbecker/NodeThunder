@@ -184,6 +184,8 @@ public class NodeThunder {
 			boolean isMixinType = false;
 
 			String fieldName = field.getName();
+			
+			String childPath = "";
 
 			if (field.isAnnotationPresent(ThunderField.class)) {
 				ThunderField annotation = field
@@ -707,7 +709,7 @@ public class NodeThunder {
 						node.setProperty(key, Util.getConvertedValue(type, value));
 
 					} else if (isArrayField(field)) {
-						node.setProperty(key, Util.getConvertedArrayValue(type, (Object[]) value));
+						node.setProperty(key, Util.getConvertedArrayValue(type, value));
 					}
 
 				} else {
